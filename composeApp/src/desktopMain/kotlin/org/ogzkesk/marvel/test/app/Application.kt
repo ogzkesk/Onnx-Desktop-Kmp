@@ -18,7 +18,9 @@ object Application {
     private val kotlinDlDetector = KotlinDlDetector(MODEL_PATH)
 
     fun initDetector() {
+        // TODO re-generate model file.
         onnxDetector.init()
+        kotlinDlDetector.init()
     }
 
     suspend fun processWithOnnxDetector(
@@ -38,6 +40,8 @@ object Application {
         }
 
     fun release() {
+        onnxDetector.close()
+        kotlinDlDetector.close()
         applicationScope.cancel()
     }
 }

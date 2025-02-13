@@ -68,9 +68,8 @@ class KotlinDlDetector(private val modelPath: String) : Detector {
             } ?: throw IllegalStateException("Model not initialized")
         } catch (e: Exception) {
             Logger.e(e) { "An exception occurred in detect" }
-            emptyList<DetectedObject>()
+            emptyList()
         }
-
     }
 
     override fun close() {

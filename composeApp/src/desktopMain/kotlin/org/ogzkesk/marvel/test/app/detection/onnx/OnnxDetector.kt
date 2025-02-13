@@ -191,8 +191,12 @@ class OnnxDetector(private val modelPath: String) : Detector {
     }
 
     override fun close() {
-        session?.close()
-        env?.close()
-        scope.cancel()
+        try {
+            session?.close()
+            env?.close()
+            scope.cancel()
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
     }
 }

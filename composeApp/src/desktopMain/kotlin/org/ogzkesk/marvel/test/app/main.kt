@@ -25,10 +25,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import co.touchlab.kermit.Logger
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.kotlinx.dl.api.inference.objectdetection.DetectedObject
 import org.ogzkesk.marvel.test.app.detection.boundingBox
 import java.awt.image.BufferedImage
@@ -68,16 +65,6 @@ fun main() = application {
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                exportCroppedImages()
-                            }
-                        }
-                    ) {
-                        Text("Parse")
-                    }
-
                     Button(
                         onClick = {
                             coroutineScope.launch {
