@@ -48,7 +48,8 @@ class OnnxDetector(
 
     fun detect(image: BufferedImage): Deferred<List<DetectionResult>> = scope.async {
         try {
-            val floatArray = imageToFloatArray(image)
+            val resizedImage = resizeImage(image)
+            val floatArray = imageToFloatArray(resizedImage)
             val shape = longArrayOf(1, 3, modelImageSize.toLong(), modelImageSize.toLong())
             val inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(floatArray), shape)
 
@@ -126,5 +127,13 @@ class OnnxDetector(
         }
 
         return detectionResults.sortedByDescending { it.confidence }
+    }
+
+    private fun resizeImage(originalImage: BufferedImage): BufferedImage {
+        val resizedImage = BufferedImage(modelImageSize, modelImageSize, originalImage.type)
+        val g = resizedImage.createGraphics()
+        g.drawImage(originalImage, 0, 0, modelImageSize, modelImageSize, null)
+        g.dispose()
+        return resizedImage
     }
 }

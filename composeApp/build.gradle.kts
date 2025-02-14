@@ -28,8 +28,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation("com.microsoft.onnxruntime:onnxruntime:1.20.0")
             implementation("com.microsoft.onnxruntime:onnxruntime_gpu:1.20.0")
-//            implementation("org.jetbrains.kotlinx:kotlin-deeplearning-onnx:0.5.2")
-//            implementation("org.jetbrains.kotlinx:kotlin-deeplearning-visualization:0.5.2")
+            implementation("uk.co.caprica:vlcj:4.8.2")
         }
     }
 }
