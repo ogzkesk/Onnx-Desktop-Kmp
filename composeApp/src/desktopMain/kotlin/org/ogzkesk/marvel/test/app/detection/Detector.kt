@@ -1,7 +1,6 @@
 package org.ogzkesk.marvel.test.app.detection
 
 import kotlinx.coroutines.Deferred
-import org.jetbrains.kotlinx.dl.api.inference.objectdetection.DetectedObject
 import java.awt.image.BufferedImage
 
 interface Detector {

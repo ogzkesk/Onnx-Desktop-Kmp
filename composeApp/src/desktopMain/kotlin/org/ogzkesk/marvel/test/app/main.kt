@@ -23,11 +23,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.launch
-import org.jetbrains.kotlinx.dl.api.inference.objectdetection.DetectedObject
-import org.ogzkesk.marvel.test.app.detection.boundingBox
+import org.ogzkesk.marvel.test.app.detection.DetectionResult
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -35,12 +35,9 @@ import javax.imageio.ImageIO
 fun main() = application {
 
     val coroutineScope = rememberCoroutineScope()
-    val images = remember {
-        mutableStateListOf<BufferedImage>()
-    }
-    val detections = remember {
-        mutableStateListOf<DetectedObject>()
-    }
+    val images = remember { mutableStateListOf<BufferedImage>() }
+    val detections = remember { mutableStateListOf<DetectionResult>() }
+
     LaunchedEffect(Unit) {
         val sourcePath = "E:\\MOD\\Marvel-Test-App\\test-app-inference"
         val sourceFolder = File(sourcePath)
@@ -68,45 +65,35 @@ fun main() = application {
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                val results = Application.processWithKotlinDl(images[0])
-                                detections.clear()
-                                detections.addAll(results)
-                            }
-                        }
-                    ) {
-                        Text("Run KotlinDL")
-                    }
-
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                val results = Application.processWithOnnxDetector(images[0])
-                                detections.clear()
-                                detections.addAll(results)
+                                images.forEach { image ->
+                                    val results = Application.processImage(image)
+                                    results.maxByOrNull { it.confidence }?.let {
+                                        detections.add(it)
+                                    }
+                                }
                             }
                         }
                     ) {
                         Text("Run Onnx")
                     }
 
-                    images.firstOrNull()?.let { image ->
+                    images.forEachIndexed { index, image ->
                         Image(
                             bitmap = image.toComposeImageBitmap(),
                             contentDescription = null,
-                            modifier = Modifier.drawWithContent {
-                                drawContent()
-                                detections.forEach {
-                                    drawRect(
-                                        color = Color.Green,
-                                        style = Stroke(2f),
-                                        topLeft = Offset(it.xMin, it.yMin),
-                                        size = Size(
-                                            it.boundingBox.width,
-                                            it.boundingBox.height
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .drawWithContent {
+                                    drawContent()
+                                    detections.getOrNull(index)?.let {
+                                        drawRect(
+                                            color = Color.Green,
+                                            style = Stroke(2f),
+                                            topLeft = Offset(it.x, it.y),
+                                            size = Size(it.width, it.height)
                                         )
-                                    )
+                                    }
                                 }
-                            }
                         )
                     }
                 }
