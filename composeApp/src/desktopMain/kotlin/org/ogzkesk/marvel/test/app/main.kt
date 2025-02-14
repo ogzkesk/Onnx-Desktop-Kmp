@@ -38,6 +38,11 @@ fun main() = application {
     val images = remember { mutableStateListOf<BufferedImage>() }
     val detections = remember { mutableStateListOf<DetectionResult>() }
 
+    LaunchedEffect(Unit){
+        Application.initDetector()
+    }
+
+    // Load images
     LaunchedEffect(Unit) {
         val sourcePath = "E:\\MOD\\Marvel-Test-App\\test-app-inference"
         val sourceFolder = File(sourcePath)
@@ -45,7 +50,6 @@ fun main() = application {
             val image = ImageIO.read(file)
             images.add(image)
         }
-        Application.initDetector()
     }
 
     Window(
