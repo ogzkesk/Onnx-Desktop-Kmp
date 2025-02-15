@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
 import java.util.Collections
 
+
 class OnnxDetector(
     private val modelPath: String,
     private val modelImageSize: Int = 640,
@@ -27,6 +28,9 @@ class OnnxDetector(
 
     fun init() {
         try {
+            if (env != null && session != null) {
+                return
+            }
             env = OrtEnvironment.getEnvironment()
             session = env?.createSession(modelPath)
             Logger.i("Model initialized")
@@ -40,15 +44,21 @@ class OnnxDetector(
         try {
             session?.close()
             env?.close()
+            session = null
+            env = null
             scope.cancel()
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    fun detect(image: BufferedImage): Deferred<List<DetectionResult>> = scope.async {
+    fun detect(
+        image: BufferedImage,
+        imageCallback: (BufferedImage) -> Unit
+    ): Deferred<List<DetectionResult>> = scope.async {
         try {
             val resizedImage = resizeImage(image)
+            imageCallback(resizedImage)
             val floatArray = imageToFloatArray(resizedImage)
             val shape = longArrayOf(1, 3, modelImageSize.toLong(), modelImageSize.toLong())
             val inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(floatArray), shape)
@@ -130,10 +140,11 @@ class OnnxDetector(
     }
 
     private fun resizeImage(originalImage: BufferedImage): BufferedImage {
-        val resizedImage = BufferedImage(modelImageSize, modelImageSize, originalImage.type)
-        val g = resizedImage.createGraphics()
-        g.drawImage(originalImage, 0, 0, modelImageSize, modelImageSize, null)
-        g.dispose()
-        return resizedImage
+        val tmp = originalImage.getScaledInstance(modelImageSize,modelImageSize,BufferedImage.SCALE_SMOOTH)
+        val dimg = BufferedImage(modelImageSize, modelImageSize, originalImage.type)
+        val g2d = dimg.createGraphics()
+        g2d.drawImage(tmp, 0, 0, null)
+        g2d.dispose()
+        return dimg
     }
 }
