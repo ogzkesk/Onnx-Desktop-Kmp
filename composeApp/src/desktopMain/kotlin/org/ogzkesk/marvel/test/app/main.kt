@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.detection.DetectionResult
 import org.ogzkesk.marvel.test.app.model.AimType
@@ -51,6 +51,13 @@ import javax.imageio.ImageIO
 
 fun main() = application {
     var latestCapturedImage: BufferedImage? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(Unit){
+        RawInputHandler.registerRawInput()
+        launch(Dispatchers.IO) {
+            RawInputHandler.listenForRawInput()
+        }
+    }
 
     Window(
         onCloseRequest = ::exitApplication,

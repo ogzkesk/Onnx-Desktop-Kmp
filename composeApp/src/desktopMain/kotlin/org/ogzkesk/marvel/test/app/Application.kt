@@ -11,7 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.awt.ScreenRecorder
-import org.ogzkesk.marvel.test.app.awt.WindowsMouseMover
+import org.ogzkesk.marvel.test.app.wnative.MouseController
 import org.ogzkesk.marvel.test.app.detection.OnnxDetector
 import org.ogzkesk.marvel.test.app.model.AimType
 import java.awt.Toolkit
@@ -67,8 +67,8 @@ object Application {
                         val finalX = placeX + targetX.toInt()
                         val finalY = placeY + targetY.toInt()
 
-                        WindowsMouseMover.holdRightClick()
-                        WindowsMouseMover.moveMouse(finalX, finalY)
+                        MouseController.holdRightClick()
+                        MouseController.moveMouse(finalX, finalY)
                         Logger.i(LOG_TAG) { "Result: $result | Moved to: ($finalX, $finalY)" }
                     }
             }

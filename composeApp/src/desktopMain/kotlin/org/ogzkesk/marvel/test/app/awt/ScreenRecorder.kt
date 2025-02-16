@@ -1,7 +1,6 @@
 package org.ogzkesk.marvel.test.app.awt
 
 import androidx.compose.ui.unit.IntSize
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

@@ -5,3 +5,11 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
 }
+
+tasks.register("runWithAdmin") {
+    doLast {
+        val command = "powershell -Command \"Start-Process cmd -ArgumentList '/c gradlew run' -Verb runAs\""
+        val process = Runtime.getRuntime().exec(command)
+        process.waitFor()
+    }
+}

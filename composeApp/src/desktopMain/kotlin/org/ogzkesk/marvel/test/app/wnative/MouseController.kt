@@ -1,4 +1,4 @@
-package org.ogzkesk.marvel.test.app.awt
+package org.ogzkesk.marvel.test.app.wnative
 
 import co.touchlab.kermit.Logger
 import com.sun.jna.Library
@@ -7,9 +7,10 @@ import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import org.ogzkesk.marvel.test.app.ScreenDimensions
 
-object WindowsMouseMover {
+object MouseController {
 
     interface User32 : Library {
+
         fun SendInput(nInputs: Int, pInputs: Array<Input>, cbSize: Int)
         fun GetAsyncKeyState(vkRbutton: Any): Short
 
@@ -22,7 +23,6 @@ object WindowsMouseMover {
     class Input : Structure() {
         @JvmField
         var type: Int = INPUT_MOUSE
-
         @JvmField
         var mi: MouseInput = MouseInput()
     }
@@ -31,24 +31,18 @@ object WindowsMouseMover {
     class MouseInput : Structure() {
         @JvmField
         var dx: Int = 0
-
         @JvmField
         var dy: Int = 0
-
         @JvmField
         var mouseData: Int = 0
-
         @JvmField
         var dwFlags: Int = 0
-
         @JvmField
         var time: Int = 0
-
         @JvmField
         var dwExtraInfo: Pointer? = null
     }
 
-    // Define Windows API Constants
     private const val VK_RBUTTON = 0x02  // Virtual Key Code for Right Mouse Button
     private const val VK_LBUTTON = 0x01  // Virtual Key Code for Left Mouse Button
     private const val INPUT_MOUSE = 0
@@ -58,6 +52,7 @@ object WindowsMouseMover {
     private const val MOUSEEVENTF_LEFTUP = 0x0004
     private const val MOUSEEVENTF_RIGHTDOWN = 0x0008  // Right button press
     private const val MOUSEEVENTF_RIGHTUP = 0x0010
+
 
     fun moveMouse(x: Int, y: Int) {
         val input = Input()
@@ -107,5 +102,4 @@ object WindowsMouseMover {
         val upLeft = Input().apply { mi.dwFlags = MOUSEEVENTF_LEFTUP }
         User32.INSTANCE.SendInput(2, arrayOf(upRight, upLeft), upRight.size())
     }
-
 }
