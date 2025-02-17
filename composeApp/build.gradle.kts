@@ -30,10 +30,8 @@ kotlin {
             implementation("com.microsoft.onnxruntime:onnxruntime_gpu:1.20.0")
             implementation("uk.co.caprica:vlcj:4.8.2")
             implementation("com.github.kwhat:jnativehook:2.2.2")
-            implementation("net.java.dev.jna:jna:5.13.0") // TODO ?????????? kaldır
-            implementation("org.lwjgl:lwjgl:3.3.0")
-            implementation("org.lwjgl:lwjgl-glfw:3.3.0")
-            implementation("org.lwjgl:lwjgl-opengl:3.3.0")
+            implementation("net.java.dev.jna:jna:5.13.0")
+            implementation("net.java.dev.jna:jna-platform:5.13.0")
         }
     }
 }

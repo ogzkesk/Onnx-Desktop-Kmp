@@ -5,12 +5,6 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtException
 import ai.onnxruntime.OrtSession
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
 import java.util.Collections
@@ -19,12 +13,11 @@ import java.util.Collections
 class OnnxDetector(
     private val modelPath: String,
     private val modelImageSize: Int = 640,
-    private val confidenceThreshold: Float = 0.5f,
+    private val confidenceThreshold: Float = 0.8f,
     private val inputName: String = "images"
 ) {
     private var env: OrtEnvironment? = null
     private var session: OrtSession? = null
-    private val scope = CoroutineScope(Dispatchers.Default + Job())
 
     fun init() {
         try {
@@ -46,7 +39,6 @@ class OnnxDetector(
             env?.close()
             session = null
             env = null
-            scope.cancel()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -55,7 +47,7 @@ class OnnxDetector(
     fun detect(
         image: BufferedImage,
         imageCallback: (BufferedImage) -> Unit
-    ): Deferred<List<DetectionResult>> = scope.async {
+    ) : List<DetectionResult> {
         try {
             val resizedImage = resizeImage(image)
             imageCallback(resizedImage)
@@ -63,7 +55,7 @@ class OnnxDetector(
             val shape = longArrayOf(1, 3, modelImageSize.toLong(), modelImageSize.toLong())
             val inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(floatArray), shape)
 
-            inputTensor.use {
+            return inputTensor.use {
                 if (session == null) throw IllegalStateException("ORT Session not initialized")
 
                 val output = session?.run(Collections.singletonMap(inputName, inputTensor))
@@ -75,7 +67,7 @@ class OnnxDetector(
             }
         } catch (e: OrtException) {
             Logger.e("Inference error: ${e.message}")
-            emptyList()
+            return emptyList()
         }
     }
 
@@ -140,7 +132,11 @@ class OnnxDetector(
     }
 
     private fun resizeImage(originalImage: BufferedImage): BufferedImage {
-        val tmp = originalImage.getScaledInstance(modelImageSize,modelImageSize,BufferedImage.SCALE_SMOOTH)
+        val tmp = originalImage.getScaledInstance(
+            modelImageSize,
+            modelImageSize,
+            BufferedImage.SCALE_SMOOTH
+        )
         val dimg = BufferedImage(modelImageSize, modelImageSize, originalImage.type)
         val g2d = dimg.createGraphics()
         g2d.drawImage(tmp, 0, 0, null)

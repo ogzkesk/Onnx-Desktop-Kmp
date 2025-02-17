@@ -6,4 +6,7 @@ data class DetectionResult(
     val width: Float,
     val height: Float,
     val confidence: Float
-)
+) {
+    fun centerX(): Int = (x + width / 2).toInt()
+    fun centerY(): Int = (y + height / 2).toInt()
+}

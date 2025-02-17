@@ -40,23 +40,20 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.detection.DetectionResult
 import org.ogzkesk.marvel.test.app.model.AimType
 import org.ogzkesk.marvel.test.app.video.VideoPlayer
 import org.ogzkesk.marvel.test.app.video.rememberVideoPlayerState
+import org.ogzkesk.marvel.test.app.wnative.RawInputHandler
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 fun main() = application {
-    var latestCapturedImage: BufferedImage? by remember { mutableStateOf(null) }
-
-    LaunchedEffect(Unit){
-        RawInputHandler.registerRawInput()
-        launch(Dispatchers.IO) {
-            RawInputHandler.listenForRawInput()
-        }
+    var latestCapturedImage: BufferedImage? by remember {
+        mutableStateOf(null)
     }
 
     Window(
@@ -72,6 +69,7 @@ fun main() = application {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -91,6 +89,7 @@ fun main() = application {
                             Text("Body-shot")
                         }
                     }
+
                     Button(
                         onClick = {
                             Application.startAim { image, resized ->
@@ -101,12 +100,14 @@ fun main() = application {
                     ) {
                         Text("Start")
                     }
+
                     Button(
                         onClick = Application::stopAim,
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text("Stop")
                     }
+
                     latestCapturedImage?.let {
                         Image(
                             modifier = Modifier.width(
