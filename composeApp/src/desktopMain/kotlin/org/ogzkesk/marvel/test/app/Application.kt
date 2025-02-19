@@ -17,6 +17,8 @@ import org.ogzkesk.marvel.test.app.util.Dimen
 import java.awt.Rectangle
 import java.awt.Robot
 import java.awt.image.BufferedImage
+import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 import kotlin.math.hypot
 
 // TODO test with detector gpu
@@ -26,12 +28,12 @@ import kotlin.math.hypot
 object Application {
 
     private const val LOG_TAG = "Application"
-    private const val MODEL_PATH = "E:\\Anaconda\\envs\\yolo-env3\\model\\yolo11n.onnx"
     private const val DETECTION_SIZE = 640
+    private const val CAPTURE_SIZE = 900
 
+    private val modelPath = "${Paths.get("").absolutePathString()}\\yolo11n.onnx"
+    private val onnxDetector = OnnxDetector(modelPath, DETECTION_SIZE)
     private var job: Job? = null
-    private val captureSize = 900
-    private val onnxDetector = OnnxDetector(MODEL_PATH, DETECTION_SIZE)
 
     var aimType by mutableStateOf(AimType.HEAD)
         private set
@@ -40,16 +42,13 @@ object Application {
         job = CoroutineScope(Dispatchers.Default).launch {
             onnxDetector.init()
             val robot = Robot()
-            val x = Dimen.screenWidth / 2 - captureSize / 2
-            val y = Dimen.screenHeight / 2 - captureSize / 2
-            val rect = Rectangle(x, y, captureSize, captureSize)
+            val x = Dimen.screenWidth / 2 - CAPTURE_SIZE / 2
+            val y = Dimen.screenHeight / 2 - CAPTURE_SIZE / 2
+            val rect = Rectangle(x, y, CAPTURE_SIZE, CAPTURE_SIZE)
 
             while (isActive) {
-                val now = System.currentTimeMillis()
-                val image = robot.createScreenCapture(rect)
-                Logger.i("Capture total: ${System.currentTimeMillis() - now}ms")
+                val image = robot.createScreenCapture(rect).also(callback)
                 val results = onnxDetector.detect(image) {}
-                callback(image)
             }
         }
     }
@@ -61,17 +60,13 @@ object Application {
     private fun calculateDistance(results: List<DetectionResult>): Distance {
         val centerX = Dimen.screenWidth / 2
         val centerY = Dimen.screenHeight / 2
-        val captureScale = captureSize.toFloat() / DETECTION_SIZE
+        val captureScale = CAPTURE_SIZE.toFloat() / DETECTION_SIZE
 
         val result = results.minByOrNull {
             val boxCenterX = it.centerX().toDouble()
             val boxCenterY = it.centerY().toDouble()
             hypot(centerX - boxCenterX, centerY - boxCenterY)
-        }
-        if (result == null) {
-            Logger.i(LOG_TAG) { "minByOrNull is null" }
-            return Distance.ZERO
-        }
+        } ?: return Distance.ZERO
 
         val detectedX = result.x * captureScale
         val detectedY = result.y * captureScale
@@ -81,8 +76,8 @@ object Application {
         val targetX = detectedX + detectedW / 2
         val targetY = detectedY + detectedH / if (aimType == AimType.HEAD) 7 else 3
 
-        val placeX = (Dimen.screenWidth - captureSize) / 2
-        val placeY = (Dimen.screenHeight - captureSize) / 2
+        val placeX = (Dimen.screenWidth - CAPTURE_SIZE) / 2
+        val placeY = (Dimen.screenHeight - CAPTURE_SIZE) / 2
 
         val finalX = placeX + targetX.toInt()
         val finalY = placeY + targetY.toInt()
@@ -98,7 +93,7 @@ object Application {
     }
 
     fun release() {
-        onnxDetector.close()
         job?.cancel()
+        onnxDetector.close()
     }
 }
