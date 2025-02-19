@@ -1,4 +1,4 @@
-package org.ogzkesk.marvel.test.app
+package org.ogzkesk.marvel.test.app.util
 
 import java.awt.Toolkit
 

@@ -4,16 +4,17 @@ import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtException
 import ai.onnxruntime.OrtSession
+import ai.onnxruntime.OrtSession.SessionOptions
+import ai.onnxruntime.providers.OrtCUDAProviderOptions
 import co.touchlab.kermit.Logger
 import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
 import java.util.Collections
 
-
 class OnnxDetector(
     private val modelPath: String,
     private val modelImageSize: Int = 640,
-    private val confidenceThreshold: Float = 0.8f,
+    private val confidenceThreshold: Float = 0.7f,
     private val inputName: String = "images"
 ) {
     private var env: OrtEnvironment? = null
@@ -21,17 +22,21 @@ class OnnxDetector(
 
     fun init() {
         try {
-            if (env != null && session != null) {
+            if(env != null && session != null){
                 return
             }
             env = OrtEnvironment.getEnvironment()
+
+//            val sessionOptions = SessionOptions()
+//            sessionOptions.addCUDA()
+
             session = env?.createSession(modelPath)
-            Logger.i("Model initialized")
-            session?.logModelInfo()
+            Logger.i("Model initialized with optimizations")
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
+
 
     fun close() {
         try {
@@ -46,7 +51,7 @@ class OnnxDetector(
 
     fun detect(
         image: BufferedImage,
-        imageCallback: (BufferedImage) -> Unit
+        imageCallback: (resizedImage: BufferedImage) -> Unit
     ) : List<DetectionResult> {
         try {
             val resizedImage = resizeImage(image)
@@ -59,11 +64,11 @@ class OnnxDetector(
                 if (session == null) throw IllegalStateException("ORT Session not initialized")
 
                 val output = session?.run(Collections.singletonMap(inputName, inputTensor))
-
-                output.use {
+                val result = output.use {
                     val outputTensor = output?.get(0)?.value as Array<Array<FloatArray>>
                     decodeOutput(outputTensor[0])
                 }
+                result
             }
         } catch (e: OrtException) {
             Logger.e("Inference error: ${e.message}")
@@ -72,32 +77,25 @@ class OnnxDetector(
     }
 
     private fun imageToFloatArray(image: BufferedImage): FloatArray {
-        val channels = 3
-        val floatArray = FloatArray(channels * modelImageSize * modelImageSize)
+        val pixels = IntArray(modelImageSize * modelImageSize)
+        image.getRGB(0, 0, modelImageSize, modelImageSize, pixels, 0, modelImageSize)
 
-        val scaleW = modelImageSize.toFloat() / image.width
-        val scaleH = modelImageSize.toFloat() / image.height
+        val floatArray = FloatArray(3 * modelImageSize * modelImageSize)
 
-        for (c in 0 until channels) {
-            for (y in 0 until modelImageSize) {
-                for (x in 0 until modelImageSize) {
-                    // Calculate source coordinates
-                    val srcX = (x / scaleW).toInt().coerceIn(0, image.width - 1)
-                    val srcY = (y / scaleH).toInt().coerceIn(0, image.height - 1)
-
-                    val rgb = image.getRGB(srcX, srcY)
-                    val value = when (c) {
-                        0 -> ((rgb shr 16) and 0xFF) / 255.0f  // R
-                        1 -> ((rgb shr 8) and 0xFF) / 255.0f   // G
-                        2 -> (rgb and 0xFF) / 255.0f           // B
-                        else -> 0f
-                    }
-
-                    // CHW format
-                    floatArray[c * modelImageSize * modelImageSize + y * modelImageSize + x] = value
+        // Process all channels at once to improve cache locality
+        for (c in 0 until 3) {
+            var offset = c * modelImageSize * modelImageSize
+            for (pixel in pixels) {
+                val value = when (c) {
+                    0 -> ((pixel shr 16) and 0xFF) / 255.0f  // R
+                    1 -> ((pixel shr 8) and 0xFF) / 255.0f   // G
+                    2 -> (pixel and 0xFF) / 255.0f          // B
+                    else -> 0f
                 }
+                floatArray[offset++] = value
             }
         }
+
         return floatArray
     }
 
@@ -132,15 +130,10 @@ class OnnxDetector(
     }
 
     private fun resizeImage(originalImage: BufferedImage): BufferedImage {
-        val tmp = originalImage.getScaledInstance(
-            modelImageSize,
-            modelImageSize,
-            BufferedImage.SCALE_SMOOTH
-        )
-        val dimg = BufferedImage(modelImageSize, modelImageSize, originalImage.type)
-        val g2d = dimg.createGraphics()
-        g2d.drawImage(tmp, 0, 0, null)
-        g2d.dispose()
-        return dimg
+        val resized = BufferedImage(modelImageSize, modelImageSize, BufferedImage.TYPE_INT_RGB)
+        val g = resized.createGraphics()
+        g.drawImage(originalImage, 0, 0, modelImageSize, modelImageSize, null)
+        g.dispose()
+        return resized
     }
 }

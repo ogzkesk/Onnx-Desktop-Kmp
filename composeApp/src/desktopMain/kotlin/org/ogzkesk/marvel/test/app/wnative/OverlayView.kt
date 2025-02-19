@@ -4,7 +4,8 @@ import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.GDI32
 import com.sun.jna.platform.win32.User32
 
-object NativeDrawer {
+// TODO doesn't work
+object OverlayView {
 
     // Define the GDI32 interface with the required functions
     private interface GDI32Extra : GDI32 {
@@ -16,6 +17,7 @@ object NativeDrawer {
 
             // Stock objects
             const val NULL_BRUSH: Int = 5 // Used to avoid filling the rectangle
+            const val WHITE_BRUSH: Int = 0// Used to avoid filling the rectangle
         }
 
         // Define the required GDI32 functions
@@ -81,5 +83,22 @@ object NativeDrawer {
      */
     fun clearBox(x: Int, y: Int, width: Int, height: Int) {
         drawBox(x, y, width, height, 0xFFFFFF) // Draw a white box to "clear" the area
+    }
+
+    /**
+     * Clears all bounding boxes by redrawing the entire screen area.
+     * This is a simple approach and may not be efficient for large areas.
+     */
+    fun clearAllBoxes() {
+        val hdc = User32Extra.INSTANCE.GetDC(null)
+        val screenWidth = User32Extra.INSTANCE.GetSystemMetrics(User32.SM_CXSCREEN)
+        val screenHeight = User32Extra.INSTANCE.GetSystemMetrics(User32.SM_CYSCREEN)
+
+        // Clear the entire screen by drawing a white rectangle
+        val whiteBrush = GDI32Extra.INSTANCE.GetStockObject(GDI32Extra.WHITE_BRUSH)
+        val oldBrush = GDI32Extra.INSTANCE.SelectObject(hdc, whiteBrush)
+        GDI32Extra.INSTANCE.Rectangle(hdc, 0, 0, screenWidth, screenHeight)
+        GDI32Extra.INSTANCE.SelectObject(hdc, oldBrush)
+        User32Extra.INSTANCE.ReleaseDC(null, hdc)
     }
 }

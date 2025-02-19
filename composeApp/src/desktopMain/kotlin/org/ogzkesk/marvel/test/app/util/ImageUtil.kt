@@ -1,4 +1,4 @@
-package org.ogzkesk.marvel.test.app
+package org.ogzkesk.marvel.test.app.util
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers

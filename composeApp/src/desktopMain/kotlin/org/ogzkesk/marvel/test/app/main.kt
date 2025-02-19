@@ -92,7 +92,7 @@ fun main() = application {
 
                     Button(
                         onClick = {
-                            Application.startAim { image, resized ->
+                            Application.startAim { image ->
                                 latestCapturedImage = image
                             }
                         },

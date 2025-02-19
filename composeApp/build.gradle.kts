@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation("com.microsoft.onnxruntime:onnxruntime:1.20.0")
             implementation("com.microsoft.onnxruntime:onnxruntime_gpu:1.20.0")
+
             implementation("uk.co.caprica:vlcj:4.8.2")
             implementation("com.github.kwhat:jnativehook:2.2.2")
             implementation("net.java.dev.jna:jna:5.13.0")
@@ -35,7 +36,6 @@ kotlin {
         }
     }
 }
-
 
 compose.desktop {
     application {
