@@ -7,6 +7,7 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.detection.DetectionResult
@@ -14,6 +15,7 @@ import org.ogzkesk.marvel.test.app.detection.OnnxDetector
 import org.ogzkesk.marvel.test.app.model.AimType
 import org.ogzkesk.marvel.test.app.model.Distance
 import org.ogzkesk.marvel.test.app.util.Dimen
+import org.ogzkesk.marvel.test.app.wnative.RawInputHandler
 import java.awt.Rectangle
 import java.awt.Robot
 import java.awt.image.BufferedImage
@@ -48,7 +50,13 @@ object Application {
 
             while (isActive) {
                 val image = robot.createScreenCapture(rect).also(callback)
-                val results = onnxDetector.detect(image) {}
+                val detectionResults = onnxDetector.detect(image) {}
+                if(detectionResults.isEmpty()){
+                    continue
+                }
+                Logger.i("DetectionResults: $detectionResults")
+                val distance = calculateDistance(detectionResults)
+                RawInputHandler.moveMouse(distance.dx, distance.dy)
             }
         }
     }

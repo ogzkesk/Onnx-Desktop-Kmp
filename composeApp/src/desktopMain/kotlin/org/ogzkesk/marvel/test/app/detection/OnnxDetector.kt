@@ -4,8 +4,6 @@ import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtException
 import ai.onnxruntime.OrtSession
-import ai.onnxruntime.OrtSession.SessionOptions
-import ai.onnxruntime.providers.OrtCUDAProviderOptions
 import co.touchlab.kermit.Logger
 import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
@@ -32,6 +30,7 @@ class OnnxDetector(
 
             session = env?.createSession(modelPath)
             Logger.i("Model initialized with optimizations")
+            session?.logModelInfo()
         } catch (e: Exception) {
             e.printStackTrace()
         }
