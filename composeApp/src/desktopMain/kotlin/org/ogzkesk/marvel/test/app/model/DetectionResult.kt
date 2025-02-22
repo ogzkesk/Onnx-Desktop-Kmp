@@ -1,4 +1,4 @@
-package org.ogzkesk.marvel.test.app.detection
+package org.ogzkesk.marvel.test.app.model
 
 data class DetectionResult(
     val x: Float,

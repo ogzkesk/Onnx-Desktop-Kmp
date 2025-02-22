@@ -39,14 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import co.touchlab.kermit.Logger
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.ogzkesk.marvel.test.app.detection.DetectionResult
+import org.ogzkesk.marvel.test.app.model.DetectionResult
 import org.ogzkesk.marvel.test.app.model.AimType
 import org.ogzkesk.marvel.test.app.video.VideoPlayer
 import org.ogzkesk.marvel.test.app.video.rememberVideoPlayerState
-import org.ogzkesk.marvel.test.app.wnative.RawInputHandler
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO

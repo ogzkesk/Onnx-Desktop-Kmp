@@ -5,6 +5,7 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtException
 import ai.onnxruntime.OrtSession
 import co.touchlab.kermit.Logger
+import org.ogzkesk.marvel.test.app.model.DetectionResult
 import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
 import java.util.Collections
