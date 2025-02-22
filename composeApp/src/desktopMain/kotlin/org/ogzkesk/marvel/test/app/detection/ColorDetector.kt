@@ -16,23 +16,26 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class ColorDetector(
-    outlineColors: List<Color>,
+    outlineColor: Color,
     private val captureSize: Int,
-    private val sensitivity: Float = 0.3f
+    private val threshold: Float
 ) {
     private var job: Job? = null
     private val robot = Robot()
-    private val targetLab = rgbToLab(outlineColors.first())
+    private val targetLab = rgbToLab(outlineColor)
     private val rect = createCenterRect()
 
-    fun start(callback: (image: BufferedImage, distance: Distance?) -> Unit) {
+    fun start(
+        callback: (image: BufferedImage, distance: Distance?) -> Unit
+    ) {
         job = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 val image = robot.createScreenCapture(rect)
                 val start = System.currentTimeMillis()
                 val distance = detectColor(image)
+                Logger.i("Total ms: ${System.currentTimeMillis() - start}ms Distance: $distance")
                 if (distance != null) {
-                    Logger.i("Total ms: ${System.currentTimeMillis() - start}ms Distance: $distance")
+
                 }
                 callback(image, distance)
             }
@@ -66,7 +69,7 @@ class ColorDetector(
                 val pixelLab = rgbToLab(pixelColor)
                 val colorDifference = colorDifferenceLab(targetLab, pixelLab)
 
-                if (colorDifference <= sensitivity) {
+                if (colorDifference <= threshold) {
                     val imageX = centerX - (width / 2)
                     val imageY = centerY - (height / 2)
                     val absoluteX = imageX + x
@@ -80,7 +83,6 @@ class ColorDetector(
         return null
     }
 
-
     private fun colorDifferenceLab(lab1: FloatArray, lab2: FloatArray): Float {
         val dL = lab1[0] - lab2[0]
         val da = lab1[1] - lab2[1]
@@ -88,18 +90,15 @@ class ColorDetector(
         return sqrt(dL * dL + da * da + db * db)
     }
 
-    // Convert RGB to CIEXYZ
     private fun rgbToXyz(color: Color): FloatArray {
         val r = color.red / 255.0
         val g = color.green / 255.0
         val b = color.blue / 255.0
 
-        // Apply gamma correction
-        val rLinear = if (r <= 0.04045) r / 12.92 else Math.pow((r + 0.055) / 1.055, 2.4)
-        val gLinear = if (g <= 0.04045) g / 12.92 else Math.pow((g + 0.055) / 1.055, 2.4)
-        val bLinear = if (b <= 0.04045) b / 12.92 else Math.pow((b + 0.055) / 1.055, 2.4)
+        val rLinear = if (r <= 0.04045) r / 12.92 else ((r + 0.055) / 1.055).pow(2.4)
+        val gLinear = if (g <= 0.04045) g / 12.92 else ((g + 0.055) / 1.055).pow(2.4)
+        val bLinear = if (b <= 0.04045) b / 12.92 else ((b + 0.055) / 1.055).pow(2.4)
 
-        // Convert to CIEXYZ
         val x = rLinear * 0.4124564 + gLinear * 0.3575761 + bLinear * 0.1804375
         val y = rLinear * 0.2126729 + gLinear * 0.7151522 + bLinear * 0.0721750
         val z = rLinear * 0.0193339 + gLinear * 0.1191920 + bLinear * 0.9503041
@@ -107,9 +106,7 @@ class ColorDetector(
         return floatArrayOf(x.toFloat(), y.toFloat(), z.toFloat())
     }
 
-    // Convert CIEXYZ to CIELAB
     private fun xyzToLab(xyz: FloatArray): FloatArray {
-        // D65 reference white point
         val refX = 95.047f
         val refY = 100.000f
         val refZ = 108.883f
@@ -135,7 +132,6 @@ class ColorDetector(
         return floatArrayOf(l.toFloat(), a.toFloat(), b.toFloat())
     }
 
-    // Convert RGB to CIELAB
     private fun rgbToLab(color: Color): FloatArray {
         val xyz = rgbToXyz(color)
         return xyzToLab(xyz)
