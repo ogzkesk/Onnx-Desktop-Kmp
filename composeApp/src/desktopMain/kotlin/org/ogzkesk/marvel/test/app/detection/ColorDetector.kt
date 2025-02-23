@@ -1,62 +1,21 @@
 package org.ogzkesk.marvel.test.app.detection
 
-import co.touchlab.kermit.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.model.Distance
 import org.ogzkesk.marvel.test.app.util.Dimen
 import java.awt.Color
-import java.awt.Rectangle
-import java.awt.Robot
 import java.awt.image.BufferedImage
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class ColorDetector(
     outlineColor: Color,
-    private val captureSize: Int,
     private val threshold: Float
-) {
-    private var job: Job? = null
-    private val robot = Robot()
+) : Detector {
     private val targetLab = rgbToLab(outlineColor)
-    private val rect = createCenterRect()
 
-    fun start(
-        callback: (image: BufferedImage, distance: Distance?) -> Unit
-    ) {
-        job = CoroutineScope(Dispatchers.Default).launch {
-            while (isActive) {
-                val image = robot.createScreenCapture(rect)
-                val start = System.currentTimeMillis()
-                val distance = detectColor(image)
-                Logger.i("Total ms: ${System.currentTimeMillis() - start}ms Distance: $distance")
-                if (distance != null) {
-
-                }
-                callback(image, distance)
-            }
-        }
-    }
-
-    fun stop() {
-        job?.cancel()
-    }
-
-    private fun createCenterRect(): Rectangle {
-        val x = Dimen.screenWidth / 2 - captureSize / 2
-        val y = Dimen.screenHeight / 2 - captureSize / 2
-        return Rectangle(x, y, captureSize, captureSize)
-    }
-
-    private fun detectColor(
-        image: BufferedImage,
-        centerX: Int = Dimen.screenWidth / 2,
-        centerY: Int = Dimen.screenHeight / 2
-    ): Distance? {
+    override fun detect(image: BufferedImage): Distance? {
+        val centerX: Int = Dimen.screenWidth / 2
+        val centerY: Int = Dimen.screenHeight / 2
         val width = image.width
         val height = image.height
 

@@ -6,6 +6,7 @@ import ai.onnxruntime.OrtException
 import ai.onnxruntime.OrtSession
 import co.touchlab.kermit.Logger
 import org.ogzkesk.marvel.test.app.model.DetectionResult
+import org.ogzkesk.marvel.test.app.model.Distance
 import java.awt.image.BufferedImage
 import java.nio.FloatBuffer
 import java.util.Collections
@@ -15,13 +16,13 @@ class OnnxDetector(
     private val modelImageSize: Int = 640,
     private val confidenceThreshold: Float = 0.7f,
     private val inputName: String = "images"
-) {
+) : Detector {
     private var env: OrtEnvironment? = null
     private var session: OrtSession? = null
 
     fun init() {
         try {
-            if(env != null && session != null){
+            if (env != null && session != null) {
                 return
             }
             env = OrtEnvironment.getEnvironment()
@@ -49,10 +50,14 @@ class OnnxDetector(
         }
     }
 
+    override fun detect(image: BufferedImage): Distance? {
+        return null
+    }
+
     fun detect(
         image: BufferedImage,
         imageCallback: (resizedImage: BufferedImage) -> Unit
-    ) : List<DetectionResult> {
+    ): List<DetectionResult> {
         try {
             val resizedImage = resizeImage(image)
             imageCallback(resizedImage)

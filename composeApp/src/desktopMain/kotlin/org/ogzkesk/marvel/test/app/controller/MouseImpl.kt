@@ -1,30 +1,30 @@
-package org.ogzkesk.marvel.test.app
+package org.ogzkesk.marvel.test.app.controller
 
-import kotlinx.coroutines.*
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.wnative.User32Extra
 import org.ogzkesk.marvel.test.app.wnative.User32Extra.Companion.moveMouse
 import org.ogzkesk.marvel.test.app.wnative.User32Extra.Companion.moveMouseAbsolute
 import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
-class Mouse2(
+class MouseImpl(
     private val horizontalSensitivity: Double,
     private val verticalSensitivity: Double,
-    private val user32: User32Extra
-) {
-    private var moveJob: Job? = null
+    private val user32: User32Extra,
+    private val steps: Int = 8
+) : Mouse {
+    private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    fun move(
-        dx: Int,
-        dy: Int,
-        durationMs: Int = 25,  // Reduced duration for faster movement
-        steps: Int = 8         // Fewer steps but still smooth
-    ) {
-        moveJob?.cancel()
-
-        moveJob = scope.launch {
+    override fun move(dx: Int, dy: Int) {
+        job?.cancel()
+        job = scope.launch {
             val adjustedDx = dx / horizontalSensitivity
             val adjustedDy = dy / verticalSensitivity
 
@@ -49,27 +49,21 @@ class Mouse2(
                 prevX = currentX
                 prevY = currentY
 
-                // Minimal fixed delay for maximum speed while maintaining smoothness
                 delay(1)
             }
         }
     }
 
-    /**
-     * Modified interpolation curve for faster initial movement
-     * while maintaining smooth deceleration
-     */
     private fun fastSmoothInterpolation(t: Float): Float {
-        // Accelerated ease-out curve
         return 1 - (1 - t).pow(3)
     }
 
-    fun moveAbsolute(x: Int, y: Int) {
-        moveJob?.cancel()
+    override fun moveAbsolute(x: Int, y: Int) {
+        job?.cancel()
         user32.moveMouseAbsolute(x, y)
     }
 
-    fun stop() {
-        moveJob?.cancel()
+    override fun stop() {
+        job?.cancel()
     }
 }

@@ -1,4 +1,4 @@
-package org.ogzkesk.marvel.test.app
+package org.ogzkesk.marvel.test.app.controller
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,23 +8,24 @@ import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.wnative.User32Extra
 import org.ogzkesk.marvel.test.app.wnative.User32Extra.Companion.moveMouse
 import org.ogzkesk.marvel.test.app.wnative.User32Extra.Companion.moveMouseAbsolute
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
-class Mouse(
+class MouseImpl2(
     private val horizontalSensitivity: Double,
     private val verticalSensitivity: Double,
     private val user32: User32Extra
-) {
-    private var moveJob: Job? = null
+) : Mouse {
+    private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    fun move(dx: Int, dy: Int) {
-        moveJob?.cancel()
-
+    override fun move(dx: Int, dy: Int) {
+        job?.cancel()
         val distance = sqrt((dx * dx + dy * dy).toDouble())
         val steps = calculateOptimalSteps(distance)
-
-        moveJob = scope.launch {
+        job = scope.launch {
             val adjustedDx = dx / horizontalSensitivity
             val adjustedDy = dy / verticalSensitivity
 
@@ -68,6 +69,15 @@ class Mouse(
         }
     }
 
+    override fun moveAbsolute(x: Int, y: Int) {
+        job?.cancel()
+        user32.moveMouseAbsolute(x, y)
+    }
+
+    override fun stop() {
+        job?.cancel()
+    }
+
     private fun calculateOptimalSteps(distance: Double): Int {
         return when {
             distance < 3 -> 1     // Instant move
@@ -97,14 +107,5 @@ class Mouse(
             else -> 1.5f
         }
         return 1 - (1 - t).pow(power)
-    }
-
-    fun moveAbsolute(x: Int, y: Int) {
-        moveJob?.cancel()
-        user32.moveMouseAbsolute(x, y)
-    }
-
-    fun stop() {
-        moveJob?.cancel()
     }
 }
