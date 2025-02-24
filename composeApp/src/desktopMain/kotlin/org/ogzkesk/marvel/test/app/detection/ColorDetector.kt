@@ -10,10 +10,13 @@ import kotlin.math.sqrt
 class ColorDetector(
     outlineColor: Color,
     private val threshold: Float
-) : Detector {
+) : Detector<Distance?> {
     private val targetLab = rgbToLab(outlineColor)
 
-    override fun detect(image: BufferedImage): Distance? {
+    override fun detect(
+        image: BufferedImage,
+        callback: ((BufferedImage) -> Unit)?
+    ): Distance? {
         val centerX: Int = Dimen.screenWidth / 2
         val centerY: Int = Dimen.screenHeight / 2
         val width = image.width

@@ -7,6 +7,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.ogzkesk.marvel.test.app.detection.Detector
+import org.ogzkesk.marvel.test.app.model.Distance
 import org.ogzkesk.marvel.test.app.util.Dimen
 import java.awt.Rectangle
 import java.awt.Robot
@@ -14,7 +15,7 @@ import java.awt.image.BufferedImage
 
 class Controller(
     private val mouse: Mouse,
-    private val detector: Detector
+    private val detector: Detector<Distance?>
 ) {
     private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -26,7 +27,7 @@ class Controller(
         job = scope.launch {
             while (isActive) {
                 val image = robot.createScreenCapture(rect)
-                val distance = detector.detect(image)
+                val distance = detector.detect(image, null)
                 callback(image)
                 distance?.let {
                     val targetDx = distance.dx
