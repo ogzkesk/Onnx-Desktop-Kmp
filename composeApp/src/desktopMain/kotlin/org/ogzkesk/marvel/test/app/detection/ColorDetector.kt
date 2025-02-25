@@ -10,13 +10,14 @@ import kotlin.math.sqrt
 class ColorDetector(
     outlineColor: Color,
     private val threshold: Float
-) : Detector<Distance?> {
+) : Detector<List<Distance>> {
     private val targetLab = rgbToLab(outlineColor)
 
     override fun detect(
         image: BufferedImage,
         callback: ((BufferedImage) -> Unit)?
-    ): Distance? {
+    ): List<Distance> {
+        val results = mutableListOf<Distance>()
         val centerX: Int = Dimen.screenWidth / 2
         val centerY: Int = Dimen.screenHeight / 2
         val width = image.width
@@ -38,11 +39,11 @@ class ColorDetector(
                     val absoluteY = imageY + y
                     val dx = absoluteX - centerX
                     val dy = absoluteY - centerY
-                    return Distance(dx, dy, absoluteX, absoluteY)
+                    results.add(Distance(dx, dy, absoluteX, absoluteY))
                 }
             }
         }
-        return null
+        return results
     }
 
     private fun colorDifferenceLab(lab1: FloatArray, lab2: FloatArray): Float {

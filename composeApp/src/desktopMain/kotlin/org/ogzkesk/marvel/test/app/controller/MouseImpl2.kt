@@ -21,6 +21,12 @@ class MouseImpl2(
     private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    override fun moveWithoutAnimation(dx: Int, dy: Int) {
+        val finalDy = dy / verticalSensitivity
+        val finalDx = dx / horizontalSensitivity
+        user32.moveMouse(finalDx.toInt(),finalDy.toInt())
+    }
+
     override fun move(dx: Int, dy: Int) {
         job?.cancel()
         val distance = sqrt((dx * dx + dy * dy).toDouble())

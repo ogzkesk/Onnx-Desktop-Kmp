@@ -72,9 +72,7 @@ fun main() = application {
 
                     latestCapturedImage?.let {
                         Image(
-                            modifier = Modifier.width(
-                                it.width.dp / 4
-                            ),
+                            modifier = Modifier.width(it.width.dp),
                             bitmap = it.toComposeImageBitmap(),
                             contentDescription = null,
                         )

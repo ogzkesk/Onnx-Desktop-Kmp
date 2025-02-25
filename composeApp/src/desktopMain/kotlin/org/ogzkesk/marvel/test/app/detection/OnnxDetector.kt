@@ -25,10 +25,6 @@ class OnnxDetector(
                 return
             }
             env = OrtEnvironment.getEnvironment()
-
-//            val sessionOptions = SessionOptions()
-//            sessionOptions.addCUDA()
-
             session = env?.createSession(modelPath)
             Logger.i("Model initialized with optimizations")
             session?.logModelInfo()
@@ -49,6 +45,7 @@ class OnnxDetector(
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun detect(
         image: BufferedImage,
         callback: ((BufferedImage) -> Unit)?

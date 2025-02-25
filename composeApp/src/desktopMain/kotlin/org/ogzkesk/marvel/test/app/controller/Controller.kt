@@ -1,5 +1,6 @@
 package org.ogzkesk.marvel.test.app.controller
 
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,25 +16,27 @@ import java.awt.image.BufferedImage
 
 class Controller(
     private val mouse: Mouse,
-    private val detector: Detector<Distance?>
+    private val detector: Detector<List<Distance>>,
+    private val targetPredictor: TargetPredictor
 ) {
     private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val robot = Robot()
-    private var rect: Rectangle = createCenterRect()
-    private val captureSize = 320
+    private val captureSize = 200
+    private val rect: Rectangle = createCenterRect()
 
     fun startAim(callback: (BufferedImage) -> Unit) {
         job = scope.launch {
             while (isActive) {
+                /**
+                 * screenCapture & detect takes avg 15-20ms total
+                 * **/
                 val image = robot.createScreenCapture(rect)
-                val distance = detector.detect(image, null)
+
+                // TODO detect returns total 4-11 detections.. handle results
+                val results = detector.detect(image, null)
+
                 callback(image)
-                distance?.let {
-                    val targetDx = distance.dx
-                    val targetDy = distance.dy + 10
-                    mouse.move(targetDx, targetDy)
-                }
             }
         }
     }
