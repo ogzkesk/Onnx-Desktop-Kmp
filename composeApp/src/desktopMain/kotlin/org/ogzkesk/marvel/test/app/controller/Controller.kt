@@ -22,10 +22,10 @@ class Controller(
     private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val robot = Robot()
-    private val captureSize = 200
+    private val captureSize = 280
     private val rect: Rectangle = createCenterRect()
 
-    fun startAim(callback: (BufferedImage) -> Unit) {
+    fun startAim(callback: (image: BufferedImage, results: List<Distance>) -> Unit) {
         job = scope.launch {
             while (isActive) {
                 /**
@@ -36,7 +36,8 @@ class Controller(
                 // TODO detect returns total 4-11 detections.. handle results
                 val results = detector.detect(image, null)
 
-                callback(image)
+                Logger.d("size:${results.size} ${results.joinToString { "(${it.dx},${it.dy})" }}")
+                callback(image,results)
             }
         }
     }

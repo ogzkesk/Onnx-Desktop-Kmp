@@ -4,6 +4,7 @@ import org.ogzkesk.marvel.test.app.controller.Controller
 import org.ogzkesk.marvel.test.app.controller.MouseImpl
 import org.ogzkesk.marvel.test.app.detection.ColorDetector
 import org.ogzkesk.marvel.test.app.controller.TargetPredictor
+import org.ogzkesk.marvel.test.app.model.Distance
 import org.ogzkesk.marvel.test.app.wnative.User32Extra
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -22,12 +23,12 @@ object Application {
         ),
         detector = ColorDetector(
             outlineColor = targetGreen,
-            threshold = 0.14F,
+            threshold = 0.3F,
         ),
         targetPredictor = TargetPredictor()
     )
 
-    fun startAim(callback: (BufferedImage) -> Unit) {
+    fun startAim(callback: (image: BufferedImage, callback: List<Distance>) -> Unit) {
         controller.startAim(callback)
     }
 

@@ -20,7 +20,7 @@ class TargetPredictor(
             sample.dy
         }
 
-        return Distance(0,0,0,0)
+        return Distance(0,0,0,0,0,0)
     }
 
     fun reset(){

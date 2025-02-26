@@ -39,7 +39,7 @@ class ColorDetector(
                     val absoluteY = imageY + y
                     val dx = absoluteX - centerX
                     val dy = absoluteY - centerY
-                    results.add(Distance(dx, dy, absoluteX, absoluteY))
+                    results.add(Distance(dx, dy, absoluteX, absoluteY, x, y))
                 }
             }
         }
